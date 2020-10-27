@@ -15,6 +15,7 @@ import (
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sourcegraph/sourcegraph/cmd/frontend/types"
 	"github.com/sourcegraph/sourcegraph/internal/api"
 	"github.com/sourcegraph/sourcegraph/internal/trace"
 	"github.com/sourcegraph/sourcegraph/internal/workerutil"
@@ -188,7 +189,7 @@ func (s *Syncer) SyncExternalService(ctx context.Context, tx Store, externalServ
 		return errors.Errorf("want 1 external service but got %d", len(svcs))
 	}
 	svc := svcs[0]
-	isUserOwned := svc.NamespaceUserID > 0
+	isUserOwned := svc.NamespaceUserID != nil && *svc.NamespaceUserID > 0
 
 	onSourced := func(*Repo) error { return nil } //noop
 
@@ -682,7 +683,7 @@ func NewDiff(sourced, stored []*Repo) (diff Diff) {
 	return newDiff(nil, sourced, stored)
 }
 
-func newDiff(svc *ExternalService, sourced, stored []*Repo) (diff Diff) {
+func newDiff(svc *types.ExternalService, sourced, stored []*Repo) (diff Diff) {
 	// Sort sourced so we merge deterministically
 	sort.Sort(Repos(sourced))
 
@@ -753,7 +754,7 @@ func merge(o, n *Repo) {
 	o.Update(n)
 }
 
-func (s *Syncer) sourced(ctx context.Context, svcs []*ExternalService, onSourced ...func(*Repo) error) ([]*Repo, error) {
+func (s *Syncer) sourced(ctx context.Context, svcs []*types.ExternalService, onSourced ...func(*Repo) error) ([]*Repo, error) {
 	srcs, err := s.Sourcer(svcs...)
 	if err != nil {
 		return nil, err

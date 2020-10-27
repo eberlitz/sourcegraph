@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sourcegraph/sourcegraph/cmd/frontend/types"
 	"github.com/sourcegraph/sourcegraph/internal/api"
 	"github.com/sourcegraph/sourcegraph/internal/extsvc"
 	"github.com/sourcegraph/sourcegraph/internal/extsvc/awscodecommit"
@@ -30,7 +31,7 @@ func TestExternalService_Exclude(t *testing.T) {
 		assert ExternalServicesAssertion
 	}
 
-	githubService := ExternalService{
+	githubService := types.ExternalService{
 		Kind:        extsvc.KindGitHub,
 		DisplayName: "Github",
 		Config: `{
@@ -43,7 +44,7 @@ func TestExternalService_Exclude(t *testing.T) {
 		UpdatedAt: now,
 	}
 
-	gitlabService := ExternalService{
+	gitlabService := types.ExternalService{
 		Kind:        extsvc.KindGitLab,
 		DisplayName: "GitLab",
 		Config: `{
@@ -56,7 +57,7 @@ func TestExternalService_Exclude(t *testing.T) {
 		UpdatedAt: now,
 	}
 
-	bitbucketServerService := ExternalService{
+	bitbucketServerService := types.ExternalService{
 		Kind:        extsvc.KindBitbucketServer,
 		DisplayName: "Bitbucket Server",
 		Config: `{
@@ -70,7 +71,7 @@ func TestExternalService_Exclude(t *testing.T) {
 		UpdatedAt: now,
 	}
 
-	awsCodeCommitService := ExternalService{
+	awsCodeCommitService := types.ExternalService{
 		ID:          9,
 		Kind:        extsvc.KindAWSCodeCommit,
 		DisplayName: "AWS CodeCommit",
@@ -84,7 +85,7 @@ func TestExternalService_Exclude(t *testing.T) {
 		UpdatedAt: now,
 	}
 
-	gitoliteService := ExternalService{
+	gitoliteService := types.ExternalService{
 		Kind:        extsvc.KindGitolite,
 		DisplayName: "Gitolite",
 		Config: `{
@@ -96,7 +97,7 @@ func TestExternalService_Exclude(t *testing.T) {
 		UpdatedAt: now,
 	}
 
-	otherService := ExternalService{
+	otherService := types.ExternalService{
 		Kind:        extsvc.KindOther,
 		DisplayName: "Other code hosts",
 		Config: formatJSON(t, `{
@@ -185,7 +186,7 @@ func TestExternalService_Exclude(t *testing.T) {
 
 	var testCases []testCase
 	{
-		svcs := ExternalServices{
+		svcs := types.ExternalServices{
 			githubService.With(func(e *ExternalService) {
 				e.Config = formatJSON(t, `
 				{
@@ -524,7 +525,7 @@ func TestSyncRateLimiters(t *testing.T) {
 	makeLister := func(options ...limitOptions) *MockExternalServicesLister {
 		services := make([]*ExternalService, 0, len(options))
 		for i, o := range options {
-			svc := &ExternalService{
+			svc := &types.ExternalService{
 				ID:          int64(i) + 1,
 				Kind:        "GitLab",
 				DisplayName: "GitLab",

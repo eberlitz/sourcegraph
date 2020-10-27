@@ -13,6 +13,7 @@ import (
 	"github.com/inconshreveable/log15"
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
+	"github.com/sourcegraph/sourcegraph/cmd/frontend/types"
 	"github.com/sourcegraph/sourcegraph/cmd/repo-updater/repos"
 	"github.com/sourcegraph/sourcegraph/internal/api"
 	"github.com/sourcegraph/sourcegraph/internal/extsvc"
@@ -200,7 +201,7 @@ func respond(w http.ResponseWriter, code int, v interface{}) {
 	}
 }
 
-func newExternalServices(es ...*repos.ExternalService) []api.ExternalService {
+func newExternalServices(es ...*types.ExternalService) []api.ExternalService {
 	svcs := make([]api.ExternalService, 0, len(es))
 
 	for _, e := range es {
@@ -370,7 +371,7 @@ func externalServiceValidate(ctx context.Context, req *protocol.ExternalServiceS
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	src, err := repos.NewSource(&repos.ExternalService{
+	src, err := repos.NewSource(&types.ExternalService{
 		ID:          req.ExternalService.ID,
 		Kind:        req.ExternalService.Kind,
 		DisplayName: req.ExternalService.DisplayName,
