@@ -66,6 +66,8 @@ func addDebugHandlers(r *mux.Router) {
 	rph.AddToRouter(r)
 }
 
+var PreMountGrafanaHook func() error
+
 func addNoGrafanaHandler(r *mux.Router) {
 	noGrafana := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `Grafana endpoint proxying: Please set env var GRAFANA_SERVER_URL`)
@@ -73,8 +75,21 @@ func addNoGrafanaHandler(r *mux.Router) {
 	r.Handle("/grafana", adminOnly(noGrafana))
 }
 
+func addGrafanaNotLicensedHandler(r *mux.Router) {
+	notLicensed := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `The feature "monitoring" is not activated in your Sourcegraph license. Upgrade your Sourcegraph subscription to use this feature.`)
+	})
+	r.Handle("/grafana", adminOnly(notLicensed))
+}
+
 // addReverseProxyForService registers a reverse proxy for the specified service.
 func addGrafana(r *mux.Router) {
+	if PreMountGrafanaHook != nil {
+		if err := PreMountGrafanaHook(); err != nil {
+			addGrafanaNotLicensedHandler(r)
+			return
+		}
+	}
 	if len(grafanaURLFromEnv) > 0 {
 		grafanaURL, err := url.Parse(grafanaURLFromEnv)
 		if err != nil {
